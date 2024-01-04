@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{%load static %}
+
+{% block main %}
+<!--Main Navigation-->
+
+<!--Main layout-->
+<main style="margin-top: 0px">
+  <div class='container'>
+    <section class="p-4 mb-4 align-items-center flex-column">
+      <nav class='navbar'>
+        <ul class="pagination pr-2">
+          {% if page.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="{{surl}}page={{ page.previous_page_number }}">Previous</a>
+          </li>
+          <li class="page-item"><a class="page-link" href="{{surl}}page={{ page.previous_page_number }}">
+            {{ page.previous_page_number }}</a></li>
+          {% endif %}
+          <li class="page-item active" aria-current="page">
+            <a class="page-link" href="#">{{ page.number }}<span class="visually-hidden">(current)</span></a>
+          </li>
+          {% if page.has_next %}
+          <li class="page-item"><a class="page-link" href="{{surl}}page={{ page.next_page_number }}">
+            {{ page.next_page_number }} </a></li>
+          <li class="page-item">
+            <a class="page-link" href="{{surl}}page={{ page.next_page_number }}">Next</a>
+          </li>
+          {% endif %}
+        </ul>
+        <form class="d-flex pe-2" role="search"  action="{% url 'showrestaurant' %}" method="get">
+          {% csrf_token %}
+          <input class="form-control me-2" type="text" name="query" {% if query %} value = "{{query}}" {% endif %}
+           placeholder="Dish / Restaurant" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      </nav>
+    </section>
+
+    {% if page.object_list %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Dish/Restaurant</th>
+          <th scope="col">Restaurant Location</th>
+          <th scope="col">Restaurant Rating</th>
+          <th scope="col">Average Cost for Two</th>
+          <th scope="col">Show Menu</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for restaurant in page.object_list %}
+        <tr>
+          <td>
+            {% if restaurant.dish %}
+            <h5 class='text-primary'>{{restaurant.dish}}</h5>
+            at {{restaurant.info.name}}
+        {% else %}
+        <h5>{{restaurant.info.name}}</h5>
+        {% endif %}
+      </td>
+          <td>{{restaurant.info.location}}</td>
+          <td>{% if restaurant.info.aggregate_rating %}
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar" role="progressbar" style="background-color: #{{restaurant.info.rating_color}} ; width: {{restaurant.info.aggregate_rating}}%;" aria-valuenow="{{restaurant.info.aggregate_rating}}" aria-valuemin="0" aria-valuemax="100">{{restaurant.info.aggregate_rating}}/100</div>
+            </div>
+            {% else %}
+            Not Rated
+            {% endif %}
+          </td>
+          <td>{{restaurant.info.average_cost_for_two}}</td>
+          <td><!-- Button trigger modal -->
+            <button type="button" class="btn btn-danger" data-mdb-toggle="modal"
+              data-mdb-target="#menuModal{{restaurant.info.id}}">
+              Show Menu
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="menuModal{{restaurant.info.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Menu - {{restaurant.info.name}}</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body overflow-auto" style="position: relative; height: 400px">
+                    
+                    
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Dish</th>
+                          <th scope="col">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        {% for key, value in restaurant.info.items.items %}
+                        <tr>
+                          <td>{{key}}</td>
+                          <td>{{value}}</td>
+                        </tr>
+                        {% endfor %}
+
+                      </tbody>
+                    </table>
+
+
+                  </div>
+                  
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-ripple-init data-mdb-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    
+    <nav class = 'mb-6' aria-label="...">
+      <ul class="pagination">
+        {% if page.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="{{surl}}page={{ page.previous_page_number }}">Previous</a>
+        </li>
+        <li class="page-item"><a class="page-link" href="{{surl}}page={{ page.previous_page_number }}">
+          {{ page.previous_page_number }}</a></li>
+        {% endif %}
+        <li class="page-item active" aria-current="page">
+          <a class="page-link" href="#">{{ page.number }}<span class="visually-hidden">(current)</span></a>
+        </li>
+        {% if page.has_next %}
+        <li class="page-item"><a class="page-link" href="{{surl}}page={{ page.next_page_number }}">
+          {{ page.next_page_number }}</a></li>
+        <li class="page-item">
+          <a class="page-link" href="{{surl}}page={{ page.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+
+        {% else %}
+
+        <div class="d-flex align-items-center justify-content-center"><h3>No Result Found !!</h3></div>
+        
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</main>
+
+{%endblock main%}
